@@ -3,6 +3,8 @@ package tud.ke.ml.project.classifier;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -69,13 +71,40 @@ public class NearestNeighbor extends ANearestNeighbor implements Serializable {
 
 
 	protected List<Pair<List<Object>, Double>> getNearest(List<Object> data) {
+		// variables to create the list of instances with their distances relative to data
 		Iterator<List<Object>> instances= trainingsData.iterator();
 		List<Pair<List<Object>, Double>> distanceList = new ArrayList<Pair<List<Object>, Double>>();
+		//variable to count the kNearest elements
+		int kNearest=getkNearest();
+		//the final reduced list
+		List<Pair<List<Object>, Double>> finalList = new ArrayList<Pair<List<Object>, Double>>();
+		
+		// we get the list of all instances with their distances relative to data
 		while (instances.hasNext()) {
 			List<Object> instance=instances.next();
 			double distance=determineManhattanDistance(data, instance);
-			distanceList.add(new Pair(instance,distance));
+			Pair<List<Object>, Double> pair =new Pair<List<Object>, Double>(instance,distance);
+			distanceList.add(pair);
 		}
+		
+		//we reduce the list to the kNearest elements
+		  //we sort the list according to the distance
+		Collections.sort(distanceList, new Comparator<Pair<List<Object>, Double>>() {
+		    @Override
+		    //we define the compare function for a Pair<List<Object>, Double>.
+		    public int compare(final Pair<List<Object>, Double> o1, final Pair<List<Object>, Double> o2) {
+		    	if (o2.getB()>o1.getB()) {
+		    		return 1;
+		    	} else {
+		    		return -1;
+		    	}
+		    }
+		});
+		  //we take the k first elements of the sorted arraylist
+		for (int i=0;i<kNearest-1;i++) {
+			finalList.add(distanceList.get(i));
+		}
+
 		return distanceList;
 	}
 
