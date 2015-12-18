@@ -42,8 +42,19 @@ public class NearestNeighbor extends ANearestNeighbor implements Serializable {
 
 	protected Map<Object,Double> getUnweightedVotes(List<Pair<List<Object>, Double>> subset) {
 		Map<Object,Double> unWeightedVotes=new HashMap<Object,Double>();
+		int classAttributeIndex=getClassAttribute();
 		
-		return null;
+		for(Pair<List<Object>, Double> pair : subset) {
+			//Because the class attribute is always a string :
+			String classAttributeName=(String) pair.getA().get(classAttributeIndex);
+			if (unWeightedVotes.containsKey(classAttributeName)) {
+				unWeightedVotes.put(classAttributeName, unWeightedVotes.get(classAttributeName)+1);
+			} else {
+				unWeightedVotes.put(classAttributeName, (double) 1);
+			}
+		}
+		
+		return unWeightedVotes;
 	}
 
 	protected Map<Object, Double> getWeightedVotes(List<Pair<List<Object>, Double>> subset) {
@@ -66,13 +77,12 @@ public class NearestNeighbor extends ANearestNeighbor implements Serializable {
 	protected Object vote(List<Pair<List<Object>, Double>> subset) {
 		Map<Object,Double> unWeightedVotes=getUnweightedVotes(subset);
 		
-		return unWeightedVotes;
+		return getWinner(unWeightedVotes);
 	}
 
 
 	protected List<Pair<List<Object>, Double>> getNearest(List<Object> data) {
-		// variables to create the list of instances with their distances relative to data
-		Iterator<List<Object>> instances= trainingsData.iterator();
+		// variable to create the list of instances with their distances relative to data
 		List<Pair<List<Object>, Double>> distanceList = new ArrayList<Pair<List<Object>, Double>>();
 		//variable to count the kNearest elements
 		int kNearest=getkNearest();
@@ -80,8 +90,7 @@ public class NearestNeighbor extends ANearestNeighbor implements Serializable {
 		List<Pair<List<Object>, Double>> finalList = new ArrayList<Pair<List<Object>, Double>>();
 		
 		// we get the list of all instances with their distances relative to data
-		while (instances.hasNext()) {
-			List<Object> instance=instances.next();
+		for (List<Object> instance : trainingsData) {
 			double distance=determineManhattanDistance(data, instance);
 			Pair<List<Object>, Double> pair =new Pair<List<Object>, Double>(instance,distance);
 			distanceList.add(pair);
@@ -109,7 +118,27 @@ public class NearestNeighbor extends ANearestNeighbor implements Serializable {
 	}
 
 	protected double determineManhattanDistance(List<Object> instance1,List<Object> instance2) {
-		return 0;
+		double distance =0;
+		//we have to be careful of the classAttribute, because this is the class/attribute that we want to determine, we do not want to
+		//calculate a distance for this attribute
+		int classAttributeIndex=getClassAttribute();
+		
+		
+		for (int i=0; i<instance1.size(); i++){
+			if (i!=classAttributeIndex) {
+				//if the object is of type String
+				if (instance1.get(i) instanceof String) {
+					if (instance1.get(i)!=instance2.get(i)) {
+						distance+=1;
+					}
+					//else currObject is of type Double
+				} else {
+					distance+=Math.abs((double)instance1.get(i)-(double)instance2.get(i));
+				}
+			}
+		}
+		
+		return distance;
 	}
 
 	protected double determineEuclideanDistance(List<Object> instance1,List<Object> instance2) {
