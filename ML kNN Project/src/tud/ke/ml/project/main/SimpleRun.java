@@ -39,7 +39,7 @@ public class SimpleRun {
 		//Instanziieren des Klassifizieres
 		classifier = new keNN();
 
-		//Erstellen der Filter für Test und Trainingsdaten
+		//Erstellen der Filter fï¿½r Test und Trainingsdaten
 		filterTrain = new RemovePercentage();
 		filterTrain.setPercentage(90);
 		filterTest = new RemovePercentage();
